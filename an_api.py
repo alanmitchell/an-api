@@ -5,11 +5,12 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-@app.route('/debug_store', methods=['POST'])
+@app.route('/debug_store', methods=['POST', 'GET'])
 def store_debug_data():
     """Store POST data into log file.
     """
-    post_data = request.get_json()
+    #post_data = request.get_data(as_text=True)
+    post_data = request.get_json(force=True)
     new_data = time.asctime(time.gmtime()) + ' UTC\n' + pprint.pformat(post_data)
     if not Path('data/').exists():
         Path('data/').mkdir()
