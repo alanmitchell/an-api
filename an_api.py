@@ -33,5 +33,27 @@ def show_debug():
     except:
         return "Error occurred or no data."
 
+@app.route('/lora-store', methods=['POST'])
+def store_lora_data():
+    """Store POST data into a cumulative LoRaWAN log file, and also into a file that
+    holds the last post received.
+    """
+    post_data = request.get_data(as_text=True)
+    if not Path('lora-data/').exists():
+        Path('lora-data/').mkdir()
+
+    open('lora-data/lora.txt', 'a').write(f'{post_data}\n')
+    open('lora-data/lora-last.txt', 'w').write(f'{post_data}')
+
+    return 'OK'
+
+@app.route('/get-last-lora', methods=['GET'])
+def get_last_lora():
+    if Path('lora-data/lora-last.txt').exists():
+        return open('lora-data/lora-last.txt').read()
+    else:
+        return ''
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
+
