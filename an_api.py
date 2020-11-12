@@ -55,6 +55,20 @@ def get_last_lora():
     else:
         return ''
 
+@app.route('/lora-debug', methods=['POST'])
+def store_lora_debug_data():
+    """Store POST data into a cumulative LoRaWAN log file.
+    """
+    post_data = request.get_data(as_text=True)
+    if not Path('lora-data/').exists():
+        Path('lora-data/').mkdir()
+
+    open('lora-data/lora-debug.txt', 'a').write(f'{post_data}\n')
+
+    return 'OK'
+
+
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
 
