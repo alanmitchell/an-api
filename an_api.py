@@ -109,4 +109,5 @@ def store_lora_debug_data():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
-
+    # To test: curl -H "Content-Type: application/json" --data @test.json http://0.0.0.0:5000/lora-store
+    # where test.json has a JSON LoRaWAN record.
