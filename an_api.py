@@ -46,12 +46,11 @@ def store_lora_data():
     if not Path('lora-data/').exists():
         Path('lora-data/').mkdir()
 
-    open('lora-data/lora.txt', 'a').write(f'{post_data}\n')
-    open('lora-data/lora-last.txt', 'w').write(f'{post_data}')
+    open('lora-data/lora.json', 'a').write(f'{post_data}\n')
 
     try:
         if not Path('lora-data/gateways.tsv').exists():
-            hdr = 'dev_id\tts\tts_day\tts_hour\tcounter\tgateway\tsnr\trssi\n'
+            hdr = 'dev_id\tts\tts_day\tts_hour\tcounter\tgateway\tsnr\trssi\tdata_rate\n'
             with open('lora-data/gateways.tsv', 'w') as fout:
                 fout.write(hdr)
         rec = json.loads(post_data)
@@ -63,12 +62,13 @@ def store_lora_data():
         ts_str = ts.strftime('%Y-%m-%d %H:%M:%S')
         ts_day = ts.strftime('%Y-%m-%d')
         ts_hr = ts.strftime('%Y-%m-%d %H:00')
-        for gtw in rec['metadata']['gateways']:
-            gtw_id = gtw['gtw_id']
-            snr = gtw['snr']
-            rssi = gtw['rssi']
-            r = f'{dev_id}\t{ts_str}\t{ts_day}\t{ts_hr}\t{ctr}\t{gtw_id}\t{snr}\t{rssi}\n'
-            with open('lora-data/gateways.tsv', 'a') as fout:
+        data_rate = rec['metadata']['data_rate']
+        with open('lora-data/gateways.tsv', 'a') as fout:
+            for gtw in rec['metadata']['gateways']:
+                gtw_id = gtw['gtw_id']
+                snr = gtw['snr']
+                rssi = gtw['rssi']
+                r = f'{dev_id}\t{ts_str}\t{ts_day}\t{ts_hr}\t{ctr}\t{gtw_id}\t{snr}\t{rssi}\t{data_rate}\n'
                 fout.write(r)
     except:
         pass
