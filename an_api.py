@@ -53,6 +53,10 @@ def store_lora_data():
             hdr = 'dev_id\tts\tts_day\tts_hour\tcounter\tgateway\tsnr\trssi\tdata_rate\n'
             with open('lora-data/gateways.tsv', 'w') as fout:
                 fout.write(hdr)
+        if not Path('lora-data/values.tsv').exists():
+            hdr = 'dev_id\tts\tpayload\n'
+            with open('lora-data/values.tsv') as fout:
+                fout.write(hdr)
         rec = json.loads(post_data)
         dev_id = rec['dev_id']
         ctr = rec['counter']
@@ -70,6 +74,10 @@ def store_lora_data():
                 rssi = gtw['rssi']
                 r = f'{dev_id}\t{ts_str}\t{ts_day}\t{ts_hr}\t{ctr}\t{gtw_id}\t{snr}\t{rssi}\t{data_rate}\n'
                 fout.write(r)
+        with open('lora-data/values.tsv', 'a') as fout:
+            r = f"{dev_id}\t{ts_str}\t{rec['payload_raw']}\n"
+            fout.write(r)
+        
     except:
         pass
 
