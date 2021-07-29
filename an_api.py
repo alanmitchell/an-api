@@ -42,15 +42,12 @@ def store_lora_data():
     """Store POST data into a cumulative LoRaWAN log file, and also into a file that
     holds the last post received.
     """
-    json_file = 'lora-data/lora.json'
     gateway_file = 'lora-data/gateways.tsv'
     values_file = 'lora-data/values.tsv'
 
     post_data = request.get_data(as_text=True)
     if not Path('lora-data/').exists():
         Path('lora-data/').mkdir()
-
-    open(json_file, 'a').write(f'{post_data}\n')
 
     try:
         if not Path(gateway_file).exists():
@@ -61,37 +58,51 @@ def store_lora_data():
             hdr = 'dev_id\tts\tpayload\n'
             with open(values_file, 'w') as fout:
                 fout.write(hdr)
+        
         rec = json.loads(post_data)
-        dev_id = rec['dev_id']
-        ctr = rec['counter']
-        ts_utc = parse(rec['metadata']['time'])
+        gtw_recs = []        # holds gateway records
+
+        if 'correlation_ids' in rec:
+            # Things V3 message
+            # TO DO: parse V3 message
+            pass
+
+        else:
+            # Things V2 message
+            dev_id = rec['dev_id']
+            ctr = rec['counter']
+            ts_utc = parse(rec['metadata']['time'])
+            data_rate = rec['metadata']['data_rate']
+            payload = rec['payload_raw']
+            
+            # add to list of gateway records
+            for gtw in rec['metadata']['gateways']:
+                r = {}
+                r['gtw_id'] = gtw['gtw_id']
+                r['snr'] = gtw['snr']
+                r['rssi'] = gtw['rssi']
+                gtw_recs.append(r)
+
+        # make some more time fields
         tz_ak = pytz.timezone('US/Alaska')
         ts = ts_utc.astimezone(tz_ak).replace(tzinfo=None)
         ts_str = ts.strftime('%Y-%m-%d %H:%M:%S')
         ts_day = ts.strftime('%Y-%m-%d')
         ts_hr = ts.strftime('%Y-%m-%d %H:00')
-        data_rate = rec['metadata']['data_rate']
+
         with open(gateway_file, 'a') as fout:
-            for gtw in rec['metadata']['gateways']:
-                gtw_id = gtw['gtw_id']
-                snr = gtw['snr']
-                rssi = gtw['rssi']
-                r = f'{dev_id}\t{ts_str}\t{ts_day}\t{ts_hr}\t{ctr}\t{gtw_id}\t{snr}\t{rssi}\t{data_rate}\n'
+            for gtw in gtw_recs:
+                r = f"{dev_id}\t{ts_str}\t{ts_day}\t{ts_hr}\t{ctr}\t{gtw['gtw_id']}\t{gtw['snr']}\t{gtw['rssi']}\t{data_rate}\n"
                 fout.write(r)
+
         with open(values_file, 'a') as fout:
-            r = f"{dev_id}\t{ts_str}\t{rec['payload_raw']}\n"
+            r = f"{dev_id}\t{ts_str}\t{payload}\n"
             fout.write(r)
+
     except:
         pass
 
     return 'OK'
-
-@app.route('/get-last-lora', methods=['GET'])
-def get_last_lora():
-    if Path('lora-data/lora-last.txt').exists():
-        return open('lora-data/lora-last.txt').read()
-    else:
-        return ''
 
 @app.route('/lora-debug', methods=['POST'])
 def store_lora_debug_data():
@@ -104,8 +115,6 @@ def store_lora_debug_data():
     open('lora-data/lora-debug.txt', 'a').write(f'{post_data}\n')
 
     return 'OK'
-
-
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
