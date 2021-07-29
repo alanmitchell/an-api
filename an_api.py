@@ -64,8 +64,20 @@ def store_lora_data():
 
         if 'correlation_ids' in rec:
             # Things V3 message
-            # TO DO: parse V3 message
-            pass
+            dev_id = rec['end_device_ids']['device_id']
+            ctr = rec['uplink_message']['f_cnt']
+            ts_utc = parse(rec['received_at'])
+            dr = rec['uplink_message']['settings']['data_rate']['lora']
+            data_rate = f"SF{dr['spreading_factor']}BW{dr['bandwidth'][:3]}"
+            payload = rec['uplink_message']['frm_payload']
+
+            # add to list of gateway records
+            for gtw in rec['uplink_message']['rx_metadata']:
+                r = {}
+                r['gtw_id'] = gtw['gateway_ids']['gateway_id']
+                r['snr'] = gtw['snr']
+                r['rssi'] = gtw['rssi']
+                gtw_recs.append(r)
 
         else:
             # Things V2 message
