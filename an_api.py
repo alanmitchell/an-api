@@ -68,7 +68,7 @@ def store_lora_data():
             ctr = rec['uplink_message']['f_cnt']
             ts_utc = parse(rec['received_at'])
             dr = rec['uplink_message']['settings']['data_rate']['lora']
-            data_rate = f"SF{dr['spreading_factor']}BW{dr['bandwidth'][:3]}"
+            data_rate = f"SF{dr['spreading_factor']}BW{dr['bandwidth']/1000}"
             payload = rec['uplink_message']['frm_payload']
 
             # add to list of gateway records
