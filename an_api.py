@@ -14,6 +14,11 @@ def store_debug_data():
     """
     #post_data = request.get_data(as_text=True)
     post_data = request.get_json(force=True)
+
+    # Block this repetitive poster
+    if '256_uptime' in str(post_data):
+        return 'OK'
+
     new_data = time.asctime(time.gmtime()) + ' UTC\n' + pprint.pformat(post_data)
     if not Path('data/').exists():
         Path('data/').mkdir()
