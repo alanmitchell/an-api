@@ -10,8 +10,13 @@ app = Flask(__name__)
 
 @app.route('/debug_store', methods=['POST', 'GET'])
 def store_debug_data():
-    """Store POST data into log file.
+    """Store POST and GET data into log file.
     """
+
+    # Retrieve the GET parameter data as an immutable dictionary
+    args = request.args
+
+    # Get POST data
     #post_data = request.get_data(as_text=True)
     post_data = request.get_json(force=True)
 
@@ -20,6 +25,9 @@ def store_debug_data():
         return 'OK'
 
     new_data = time.asctime(time.gmtime()) + ' UTC\n' + pprint.pformat(post_data)
+    if args:
+        new_data += f'\n{args}'
+
     if not Path('data/').exists():
         Path('data/').mkdir()
 
