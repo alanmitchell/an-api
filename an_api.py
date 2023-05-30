@@ -47,6 +47,29 @@ def show_debug():
     except:
         return "Error occurred or no data."
 
+@app.route('/store-oauth-code', methods=['GET'])
+def store_oauth_code():
+    """Store OAuth code into file. Used as a callback endpoint in the
+    OAuth process.
+    """
+
+    # Get Request data
+    request_data = request.args
+
+    if not Path('data/').exists():
+        Path('data/').mkdir()
+
+    open('data/oauth.txt', 'w').write(request_data['code'])
+
+    return 'OK'
+
+@app.route('/get-oauth-code', methods=['GET'])
+def get_oauth_code():
+    """Return OAuth code from file
+    """
+    return open('data/oauth.txt', 'r').read()
+
+
 @app.route('/lora-store', methods=['POST'])
 def store_lora_data():
     """Store POST data into a cumulative LoRaWAN log file, and also into a file that
