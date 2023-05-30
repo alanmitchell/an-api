@@ -13,20 +13,17 @@ def store_debug_data():
     """Store POST and GET data into log file.
     """
 
-    # Retrieve the GET parameter data as an immutable dictionary
-    args = request.args
-
-    # Get POST data
-    #post_data = request.get_data(as_text=True)
-    post_data = request.get_json(force=True)
+    # Get Request data
+    if request.method == 'POST':
+        request_data = request.get_json(force=True)
+    elif request.method == 'GET':
+        request_data = request.args
 
     # Block this repetitive poster
-    if '256_uptime' in str(post_data):
+    if '256_uptime' in str(request_data):
         return 'OK'
 
-    new_data = time.asctime(time.gmtime()) + ' UTC\n' + pprint.pformat(post_data)
-    if args:
-        new_data += f'\n{args}'
+    new_data = time.asctime(time.gmtime()) + ' UTC\n' + pprint.pformat(request_data)
 
     if not Path('data/').exists():
         Path('data/').mkdir()
