@@ -4,7 +4,7 @@ import pprint
 from pathlib import Path
 import pytz
 from dateutil.parser import parse
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import requests
 
 app = Flask(__name__)
@@ -164,18 +164,27 @@ def store_lora_debug_data():
 
 @app.route('/readingdb/reading/store-things/', methods=['POST'])
 def relay_bmon():
-    data = request.data
-    store_key = request.headers.get('store-key')
+    try:
+        data = request.data
+        store_key = request.headers.get('store-key')
 
-    # Prepare headers for the relayed request
-    headers = {
-        'store-key': store_key
-    }    
-    response = requests.post(
-        'https://bms.ahfc.us/readingdb/reading/store-things/', 
-        data=data,
-        headers=headers
-        )
+        # Prepare headers for the relayed request
+        headers = {
+            'store-key': store_key
+        }    
+        response = requests.post(
+            'https://bms.ahfc.us/readingdb/reading/store-things/', 
+            data=data,
+            headers=headers
+            )
+
+    except requests.exceptions.RequestException as e:
+        # Log the error for debugging purposes
+        # e.g., app.logger.error(f"Request failed: {e}")
+
+        # Return an error response
+        return jsonify({'error': str(e)}), 500
+
     return response.content, response.status_code    
 
 
