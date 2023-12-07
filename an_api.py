@@ -11,16 +11,21 @@ app = Flask(__name__)
 
 @app.route('/debug_store', methods=['POST', 'GET'])
 def store_debug_data():
-    """Store POST data into log file.
+    """Store POST and GET data into log file.
     """
-    #post_data = request.get_data(as_text=True)
-    post_data = request.get_json(force=True)
+
+    # Get Request data
+    if request.method == 'POST':
+        request_data = request.get_json(force=True)
+    elif request.method == 'GET':
+        request_data = request.args
 
     # Block this repetitive poster
-    if '256_uptime' in str(post_data):
+    if '256_uptime' in str(request_data):
         return 'OK'
 
-    new_data = time.asctime(time.gmtime()) + ' UTC\n' + pprint.pformat(post_data)
+    new_data = time.asctime(time.gmtime()) + ' UTC\n' + pprint.pformat(request_data)
+
     if not Path('data/').exists():
         Path('data/').mkdir()
 
@@ -42,6 +47,29 @@ def show_debug():
         return '<pre>' + open('data/debug.txt').read() + '</pre>'
     except:
         return "Error occurred or no data."
+
+@app.route('/store-oauth-code', methods=['GET'])
+def store_oauth_code():
+    """Store OAuth code into file. Used as a callback endpoint in the
+    OAuth process.
+    """
+
+    # Get Request data
+    request_data = request.args
+
+    if not Path('data/').exists():
+        Path('data/').mkdir()
+
+    open('data/oauth.txt', 'w').write(request_data['code'])
+
+    return 'OK'
+
+@app.route('/get-oauth-code', methods=['GET'])
+def get_oauth_code():
+    """Return OAuth code from file
+    """
+    return open('data/oauth.txt', 'r').read()
+
 
 @app.route('/lora-store', methods=['POST'])
 def store_lora_data():
