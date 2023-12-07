@@ -5,6 +5,7 @@ from pathlib import Path
 import pytz
 from dateutil.parser import parse
 from flask import Flask, request
+import requests
 
 app = Flask(__name__)
 
@@ -132,6 +133,23 @@ def store_lora_debug_data():
     open('lora-data/lora-debug.txt', 'a').write(f'{post_data}\n')
 
     return 'OK'
+
+@app.route('/readingdb/reading/store-things/', methods=['POST'])
+def relay_bmon():
+    data = request.data
+    store_key = request.headers.get('store-key')
+
+    # Prepare headers for the relayed request
+    headers = {
+        'store-key': store_key
+    }    
+    response = requests.post(
+        'https://bms.ahfc.us/readingdb/reading/store-things/', 
+        data=data,
+        headers=headers
+        )
+    return response.content, response.status_code    
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
