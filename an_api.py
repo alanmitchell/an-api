@@ -6,6 +6,8 @@ import pytz
 from dateutil.parser import parse
 from flask import Flask, request
 
+from things_collector.main import parse_and_log
+
 app = Flask(__name__)
 
 @app.route('/debug_store', methods=['POST', 'GET'])
@@ -111,6 +113,8 @@ def store_lora_data():
                 r['snr'] = gtw['snr']
                 r['rssi'] = gtw['rssi']
                 gtw_recs.append(r)
+
+            parse_and_log(rec)
 
         else:
             # Things V2 message
